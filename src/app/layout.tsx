@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
 
  <html lang="ja">
- <body className={`${font.className}`}>
+ <body className={font.className}>
    {children}
  </body>
 </html>
