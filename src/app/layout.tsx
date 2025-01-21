@@ -5,6 +5,7 @@ import "./globals.css";
 import { Noto_Sans_JP } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { jaJP } from "@clerk/localizations";
+import { Toaster } from "sonner";
 
 const font = Noto_Sans_JP({ subsets: ["latin"] });
 export const metadata: Metadata = {
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={jaJP}>
       <html lang="ja">
-        <body className={font.className}>{children}</body>
+        <body className={font.className}>
+      <Toaster />
+          {children}</body>
       </html>
     </ClerkProvider>
   );
