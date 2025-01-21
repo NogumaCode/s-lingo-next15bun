@@ -1,6 +1,7 @@
 
 import { db } from "./drizzle";
-import { courses } from "./schema"; // テーブル定義
+import { courses } from "./schema";
+
 
 const countryList = [
   { img: "/hr.svg", name: "クロアチア" },

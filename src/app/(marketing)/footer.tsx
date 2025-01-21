@@ -1,28 +1,13 @@
-"use client"
+
 import { Button } from "@/components/ui/button";
+import { getCourses } from "@/db/queries";
 import { Loader } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 
-export const Footer = () => {
-  const [countryList, setCountryList] = useState<
-    { imageSrc: string; title: string }[]
-  >([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${window.location.origin}/api/courses`);
-        if (!response.ok) throw new Error("データ取得に失敗しました");
-        const data = await response.json();
-        setCountryList(data);
-      } catch (error) {
-        console.error("エラー情報:", error);
-      }
-    };
+export const Footer = async () => {
+  const countryList = await getCourses();
 
-    fetchData();
-  }, []);
 
   if (countryList.length === 0) {
     return (
