@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={jaJP}>
       <html lang="ja">
-        <body className={font.className}>
+        <body className={`${font.className} antialiased`}>
       <Toaster />
           {children}</body>
       </html>
