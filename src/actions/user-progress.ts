@@ -5,9 +5,9 @@ import { getCourseById, getUserProgress } from "@/db/queries";
 import { userProgress } from "@/db/schema";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export const upsertUserProgress = async (courseId: number) => {
+  try {
   const { userId } = await auth();
   const user = await currentUser();
 
@@ -27,6 +27,7 @@ export const upsertUserProgress = async (courseId: number) => {
   const existingUserProgress = await getUserProgress();
 
   if (existingUserProgress) {
+    console.log("既存の進捗を更新します: コースID", courseId);
     await db.update(userProgress).set({
       activeCourseId: courseId,
       userName: user.fullName || "User",
@@ -34,7 +35,7 @@ export const upsertUserProgress = async (courseId: number) => {
     });
     revalidatePath("/courses");
     revalidatePath("/learn");
-    redirect("/learn");
+    return { redirected: true };
   }
 
 
@@ -46,5 +47,10 @@ export const upsertUserProgress = async (courseId: number) => {
   });
   revalidatePath("/courses");
   revalidatePath("/learn");
-  redirect("/learn");
+  return { redirected: true };
+
+} catch (error) {
+  console.error("upsertUserProgressエラー:", error);
+  throw error;
+}
 };

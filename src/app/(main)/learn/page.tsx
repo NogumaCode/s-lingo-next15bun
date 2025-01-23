@@ -7,7 +7,6 @@ import { Header } from './header';
 
 const LearnPage = async () => {
   const userProgressData = getUserProgress();
-
   const [userProgress] = await Promise.all([userProgressData])
 
   if(!userProgress || !userProgress.activeCourse){
@@ -16,10 +15,10 @@ const LearnPage = async () => {
   return (
     <div className="flex flex-row-reverse gap-[48px] px-6">
     <StickyWrapper>
-    <UserProgress activeCourse={{ title:"spanish", imageSrc:"/es.svg" }} hearts={5} points={100} hasActiveSubscription={false}/>
+    <UserProgress activeCourse={ userProgress.activeCourse} hearts={userProgress.hearts} points={userProgress.points} hasActiveSubscription={false}/>
     </StickyWrapper>
     <FeedWrapper >
-      <Header title="Spanish"/>
+      <Header title={userProgress.activeCourse.title}/>
       </FeedWrapper>
     </div>
   );

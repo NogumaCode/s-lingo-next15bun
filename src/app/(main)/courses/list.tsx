@@ -20,12 +20,29 @@ const List = ({ courses, activeCourseId }: Props) => {
   const onClick = (id: number) => {
     if (pending) return;
     if (id === activeCourseId) {
+      console.log("既に選択されているコース。リダイレクトします。");
       return router.push("/learn");
     }
 
+    console.log("startTransition開始: コースID", id);
+
     startTransition(() => {
-      upsertUserProgress(id).catch(()=> toast.error("問題が発生しました"));
+      upsertUserProgress(id)
+        .then((result) => {
+          console.log("upsertUserProgress結果:", result);
+          if (result?.redirected) {
+            console.log("リダイレクト成功: コースID", id);
+            router.push("/learn");
+          } else {
+            console.log("リダイレクトフラグが設定されていません:", result);
+          }
+        })
+        .catch((error) => {
+          console.error("upsertUserProgress失敗: コースID", id, error);
+          toast.error("問題が発生しました");
+        });
     });
+
   };
 
   return (
