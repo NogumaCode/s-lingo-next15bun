@@ -16,8 +16,8 @@ const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql, { schema });
 
 const countryList = [
-  { id: 1, img: "/hr.svg", name: "クロアチア" },
-  { id: 2, img: "/es.svg", name: "スペイン" },
+  { id: 1, img: "/es.svg", name: "スペイン" },
+  { id: 2, img: "/hr.svg", name: "クロアチア" },
   { id: 3, img: "/fr.svg", name: "フランス" },
   { id: 4, img: "/it.svg", name: "イタリア" },
   { id: 5, img: "/jp.svg", name: "日本" },
@@ -36,6 +36,9 @@ const unitsList = [
 const lessonsList = [
   { id: 1, unitId: 1, order: 1, title: "名詞" },
   { id: 2, unitId: 1, order: 2, title: "動詞" },
+  { id: 3, unitId: 1, order: 3, title: "動詞" },
+  { id: 4, unitId: 1, order: 4, title: "動詞" },
+  { id: 5, unitId: 1, order: 5, title: "動詞" },
 ];
 
 const challengesList = [
