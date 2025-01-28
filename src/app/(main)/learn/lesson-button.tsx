@@ -85,44 +85,48 @@ export const LessonButton = ({
                 variant={locked ? "locked" : "secondary"}
                 className="h-[70px] w-[70px] border-b-8"
               >
-                <Icon                 
+                <Icon
                   className={cn(
                     "w-10 h-10",
                     locked
                       ? " fill-neutral-400 text-neutral-400 stroke-neutral-400"
                       : "fill-primary-foreground text-primary-foreground",
-                    isCompleted && "fill-none stroke-[4]"
+                    isCompleted && "fill-none stroke-[4]",
+                    Icon === Crown && "fill-current"
                   )}
                   style={{
                     height: "2rem",
                     width: "2rem",
-                    fill: "currentColor",
+                    ...((Icon === Crown || Icon === Star) && {
+                      fill: "currentColor",
+                    }),
                   }}
                 />
               </Button>
             </CircularProgressbarWithChildren>
           </div>
         ) : (
-          <div><Button
-          size="rounded"
-          variant={locked ? "locked" : "secondary"}
-          className="h-[70px] w-[70px] border-b-8"
-        >
-          <Icon                 
-            className={cn(
-              "w-10 h-10",
-              locked
-                ? " fill-neutral-400 text-neutral-400 stroke-neutral-400"
-                : "fill-primary-foreground text-primary-foreground",
-              isCompleted && "fill-none stroke-[4]"
-            )}
-            style={{
-              height: "2rem",
-              width: "2rem",
-             
-            }}
-          />
-        </Button></div>
+          <div>
+            <Button
+              size="rounded"
+              variant={locked ? "locked" : "secondary"}
+              className="h-[70px] w-[70px] border-b-8"
+            >
+              <Icon
+                className={cn(
+                  "w-10 h-10",
+                  locked
+                    ? " fill-neutral-400 text-neutral-400 stroke-neutral-400"
+                    : "fill-primary-foreground text-primary-foreground",
+                  isCompleted && "fill-none stroke-[4]"
+                )}
+                style={{
+                  height: "2rem",
+                  width: "2rem",
+                }}
+              />
+            </Button>
+          </div>
         )}
       </div>
     </Link>
