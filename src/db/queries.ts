@@ -67,6 +67,10 @@ export const getUnits = cache(async () => {
   const normalizedData = data.map((unit) => {
     //レッスンごとに完了状態を確認
     const lessonsWithCompletedStatus = unit.lessons.map((lesson) => {
+
+      if(lesson.challenges.length===0){
+        return {...lesson,completed:false}
+      }
       //チャレンジの完了状態をチェック
       const allCompletedChallenges = lesson.challenges.every((challenge) => {
         //チャレンジに進捗があるか、進捗データが1つ以上存在するか、それぞれの進捗データが完了しているかを確認
@@ -104,7 +108,7 @@ export const getCourseById = cache(async (courseId: number) => {
 
 //ユーザーの進行中のコースの進捗状況を取得し、最初に未完了のレッスンを特定する処理を作成
 export const getCourseProgress = cache(async () => {
-  // Clerkの認証情報を取得し、ログイン中のユーザーIDを取得
+  // Clerkの認証情報を取得し、ログイン中のユーザーIDを取得。
   const { userId } = await auth();
 
   // ユーザーの進捗状況を取得（進行中のコースIDや進捗データ）
@@ -115,9 +119,9 @@ export const getCourseProgress = cache(async () => {
     return null;
   }
 
-  // 現在進行中のコースに属するユニットとレッスン、チャレンジ、進捗情報を取得
+  // 現在進行中のコースに属するユニットとレッスン、チャレンジ、進捗情報を取得　
   const unitsInActiveCourse = await db.query.units.findMany({
-    // ユニットの順番（order）で昇順に並べる
+    // ユニットの順番（order）でorder の値が小さい順（昇順）にデータを取得する
     orderBy: (units, { asc }) => [asc(units.order)],
     // 現在のコースIDに一致するユニットのみ取得
     where: eq(units.courseId, userProgress.activeCourseId),
@@ -256,4 +260,3 @@ export const getLessonPercentage = cache(async () => {
   // 計算した進捗率を返す
   return percentage;
 });
-
