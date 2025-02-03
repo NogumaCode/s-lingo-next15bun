@@ -22,7 +22,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
   units: many(units),
 }));
 
-// コース内のユニット（学習単位）を管理するテーブル
+// コース内の各章を管理するテーブル
 export const units = pgTable("units", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -41,7 +41,7 @@ export const unitsRelations = relations(units, ({ one, many }) => ({
   lessons: many(lessons),
 }));
 
-// ユニット内のレッスンを管理するテーブル
+// 各章内のレッスンを管理するテーブル
 export const lessons = pgTable("lessons", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -83,7 +83,7 @@ export const challengesRelations = relations(challenges, ({ one, many }) => ({
   challengeProgress: many(challengeProgress),
 }));
 
-// チャレンジの選択肢を管理するテーブル
+
 export const challengeProgress = pgTable("challenge_progress", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
@@ -93,7 +93,7 @@ export const challengeProgress = pgTable("challenge_progress", {
   completed: boolean("completed").notNull().default(false),
 });
 
-// ユーザーのチャレンジ進捗を追跡するテーブル
+
 export const challengeOptions = pgTable("challenges_options", {
   id: serial("id").primaryKey(),
   challengeId: integer("challenge_id")
