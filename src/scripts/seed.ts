@@ -49,11 +49,24 @@ const challengesList = [
     order: 1,
     question: "男の人はどれですか？",
   },
+  {
+    id: 2,
+    lessonId: 1,
+    type: "ASSIST" as const,
+    order: 2,
+    question: "男の人",
+  },
+  {
+    id: 3,
+    lessonId: 1,
+    type: "SELECT" as const,
+    order: 3,
+    question: "ロボットはどれですか？",
+  },
 ];
 
 const challengeOptionsList = [
   {
-    id: 1,
     challengeId: 1,
     imageSrc: "/woman.svg",
     correct: false,
@@ -61,7 +74,6 @@ const challengeOptionsList = [
     audioSrc: "/es_woman.mp3",
   },
   {
-    id: 2,
     challengeId: 1,
     imageSrc: "/man.svg",
     correct: true,
@@ -69,10 +81,53 @@ const challengeOptionsList = [
     audioSrc: "/es_man.mp3",
   },
   {
-    id: 3,
     challengeId: 1,
     imageSrc: "/robot.svg",
     correct: false,
+    text: "el robot",
+    audioSrc: "/es_robot.mp3",
+  },
+  {
+
+    challengeId: 2,
+    correct: false,
+    text: "la mujer",
+    audioSrc: "/es_woman.mp3",
+  },
+  {
+
+    challengeId: 2,
+    correct: true,
+    text: "el hombre",
+    audioSrc: "/es_man.mp3",
+  },
+  {
+
+    challengeId: 2,
+    correct: false,
+    text: "el robot",
+    audioSrc: "/es_robot.mp3",
+  },
+  {
+
+    challengeId: 3,
+    imageSrc: "/woman.svg",
+    correct: false,
+    text: "la mujer",
+    audioSrc: "/es_woman.mp3",
+  },
+  {
+
+    challengeId: 3,
+    imageSrc: "/man.svg",
+    correct: false,
+    text: "el hombre",
+    audioSrc: "/es_man.mp3",
+  },
+  {
+    challengeId: 3,
+    imageSrc: "/robot.svg",
+    correct: true,
     text: "el robot",
     audioSrc: "/es_robot.mp3",
   },
