@@ -63,6 +63,27 @@ const challengesList = [
     order: 3,
     question: "ロボットはどれですか？",
   },
+  {
+    id: 4,
+    lessonId: 2,
+    type: "SELECT" as const,
+    order: 1,
+    question: "男の人はどれですか？",
+  },
+  {
+    id: 5,
+    lessonId: 2,
+    type: "ASSIST" as const,
+    order: 2,
+    question: "男の人",
+  },
+  {
+    id: 6,
+    lessonId: 2,
+    type: "SELECT" as const,
+    order: 3,
+    question: "ロボットはどれですか？",
+  },
 ];
 
 const challengeOptionsList = [
@@ -192,7 +213,6 @@ const main = async () => {
 
     await db.insert(schema.challengeOptions).values(
       challengeOptionsList.map((item) => ({
-        id: item.id,
         challengeId: item.challengeId,
         imageSrc: item.imageSrc,
         correct: item.correct,
