@@ -173,10 +173,14 @@ export const Quiz = ({
 
         inCorrectControls.play();
 
-        startTransition(() => {
+        if (initialPercentage !== 100) {
+          startTransition(() => {
+            setStatus("wrong");
+            setHearts((prev) => Math.max(prev - 1, 0));
+          });
+        }else{
           setStatus("wrong");
-          setHearts((prev) => Math.max(prev - 1, 0));
-        });
+        }
       } catch (error) {
         console.error("エラー発生:", error); // エラーの詳細をコンソールに表示
         toast.error("問題が発生しました。もう一度試してください");
