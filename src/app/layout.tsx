@@ -7,6 +7,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { jaJP } from "@clerk/localizations";
 import { Toaster } from "sonner";
 import { ExitModal } from "@/components/modals/exit-modal";
+import { HeartsModal } from "@/components/modals/hearts-modal";
+import { PracticeModal } from "@/components/modals/practice-modal";
 
 const font = Noto_Sans_JP({ subsets: ["latin"] });
 export const metadata: Metadata = {
@@ -25,6 +27,8 @@ export default function RootLayout({
         <body className={`${font.className} antialiased`}>
       <Toaster />
       <ExitModal/>
+      <HeartsModal/>
+      <PracticeModal/>
           {children}</body>
       </html>
     </ClerkProvider>

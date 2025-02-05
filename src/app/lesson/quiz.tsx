@@ -3,20 +3,21 @@
 import { toast } from "sonner";
 import Image from "next/image";
 import Confetti from "react-confetti";
-import { useAudio, useWindowSize } from "react-use";
+import { useAudio, useMount, useWindowSize } from "react-use";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { reduceHearts } from "@/actions/user-progress";
-import { upsertChallengeProgress } from "@/actions/challenge-progress";
 import { challengeOptions, challenges } from "@/db/schema";
+import { useHeartsModal } from "../store/use-hearts-modal";
+import { usePracticeModal } from "../store/use-practice-modal";
+import { upsertChallengeProgress } from "@/actions/challenge-progress";
 
 import { Header } from "./header";
 import { Footer } from "./footer";
 import { Challenge } from "./challenge";
 import { ResultCard } from "./result-card";
 import { QuestionBubble } from "./question-bubble";
-
 
 type Props = {
   initialLessonId: number;
@@ -35,21 +36,33 @@ export const Quiz = ({
   initialLessonChallenges,
   userSubscription,
 }: Props) => {
+  const { open: openHeartsModal } = useHeartsModal();
+  const { open: openPracticeModal } = usePracticeModal();
 
-  const {width, height} = useWindowSize();
+  useMount(() => {
+    if (initialPercentage === 100) {
+      openPracticeModal();
+    }
+  });
+
+  const { width, height } = useWindowSize();
   const router = useRouter();
-  const [finishAudio] = useAudio({ src: "/finish.mp3", autoPlay:true });
+  const [playedAudio, setPlayedAudio] = useState(false);
+  const [finishAudio, , finishControls] = useAudio({ src: "/finish.mp3" });
   const [correctAudio, , correctControls] = useAudio({ src: "/correct.wav" });
   const [inCorrectAudio, , inCorrectControls] = useAudio({
     src: "/incorrect.wav",
   });
 
   const [pending, startTransition] = useTransition();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [lessonId] = useState(initialLessonId);
 
   const [hearts, setHearts] = useState(initialHearts);
-  const [percentage, setPercentage] = useState(initialPercentage);
+  const [percentage, setPercentage] = useState(()=>{
+    return initialPercentage === 100 ? 0 :initialPercentage
+  });
   const [challenges] = useState(initialLessonChallenges);
   const [activeIndex, setActiveIndex] = useState(() => {
     const uncompletedIndex = challenges.findIndex(
@@ -59,86 +72,131 @@ export const Quiz = ({
   });
 
   const [selectedOption, setSelectedOption] = useState<number>();
-  const [status, setStatus] = useState<"correct" | "wrong" | "none">("none");
+  const [status, setStatus] = useState<
+    "correct" | "wrong" | "none" | "completed"
+  >("none");
+
   const challenge = challenges[activeIndex];
   const options = challenge?.challengeOptions ?? [];
 
-
   const onNext = () => {
-    setActiveIndex((current) => current + 1);
+    setActiveIndex((prevIndex) => {
+      const nextIndex = prevIndex + 1;
+
+      if (nextIndex >= challenges.length) {
+        setStatus("completed"); // 🔹 ここで直接 "completed" に変更
+        return prevIndex; // インデックスを変えない（最後の問題のまま）
+      }
+
+      return nextIndex;
+    });
   };
+
+  useEffect(() => {
+    if (status === "completed" && !playedAudio) {
+      finishControls.play();
+      setPlayedAudio(true);
+    }
+  }, [status, finishControls, playedAudio]);
 
   const onSelect = (id: number) => {
     if (status !== "none") return;
     setSelectedOption(id);
   };
 
-  const onContinue = () => {
-    if (!selectedOption) return;
+  const onContinue = async () => {
+    if (!selectedOption || isProcessing) return;
+
+    // ボタン連打防止のため、処理中フラグを `true` にする
+    setIsProcessing(true);
+
+    // もし前回の問題が間違いだった場合
     if (status === "wrong") {
       setStatus("none");
       setSelectedOption(undefined);
+      setIsProcessing(false);
       return;
     }
+    // もし前回の問題が正解だった場合
     if (status === "correct") {
       onNext();
       setStatus("none");
       setSelectedOption(undefined);
+      setIsProcessing(false);
       return;
     }
 
+    // 現在の問題の正解選択肢を取得
     const correctOption = options.find((option) => option.correct);
 
+    // 正解選択肢が見つからなかった場合、何もしない
     if (!correctOption) {
+      setIsProcessing(false);
       return;
     }
+
+    // もしユーザーの選択肢が正解だった場合
     if (correctOption && correctOption.id === selectedOption) {
-      startTransition(() => {
-        upsertChallengeProgress(challenge.id)
-          .then((response) => {
-            if (response?.error === "hearts") {
-              console.error("ハートがありません");
-              return;
-            }
-            correctControls.play();
-            setStatus("correct");
-            setPercentage((prev) => prev + 100 / challenges.length);
+      try {
+        const response = await upsertChallengeProgress(challenge.id);
 
-            if (initialPercentage === 100) {
-              setHearts((prev) => Math.min(prev + 1, 5));
-            }
-          })
-          .catch(() =>
-            toast.error("問題が発生しました。もう一度お試しください")
-          );
-      });
+        if (response?.error === "hearts") {
+          openHeartsModal();
+          return;
+        }
+
+        correctControls.play();
+
+        startTransition(() => {
+          setStatus("correct");
+          setPercentage((prev) => prev + 100 / challenges.length);
+
+          if (initialPercentage === 100) {
+            setHearts((prev) => Math.min(prev + 1, 5));
+          }
+        });
+      } catch (error) {
+        console.error("エラー発生:", error); // エラーの詳細をコンソールに表示
+        toast.error("問題が発生しました。もう一度お試しください");
+      } finally {
+        setIsProcessing(false);
+      }
     } else {
-      startTransition(() => {
-        reduceHearts(challenge.id)
-          .then((response) => {
-            if (response?.error === "hearts") {
-              console.log("ハートがありません");
-              return;
-            }
-            inCorrectControls.play();
-            setStatus("wrong");
+      try {
+        const response = await reduceHearts(challenge.id);
 
-            if (!response?.error) {
-              setHearts((prev) => Math.max(prev - 1, 0));
-            }
-          })
-          .catch(() =>
-            toast.error("問題が発生しました。もう一度試してください")
-          );
-      });
+        if (response?.error === "hearts") {
+          openHeartsModal();
+          setIsProcessing(false);
+          return;
+        }
+
+        inCorrectControls.play();
+
+        startTransition(() => {
+          setStatus("wrong");
+          setHearts((prev) => Math.max(prev - 1, 0));
+        });
+      } catch (error) {
+        console.error("エラー発生:", error); // エラーの詳細をコンソールに表示
+        toast.error("問題が発生しました。もう一度試してください");
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
-  if (!challenge) {
+  if (status === "completed") {
     return (
       <>
-      {finishAudio}
-      <Confetti width={width} height={height} recycle={false} numberOfPieces={500} tweenDuration={10000} />
+        {finishAudio}
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={500}
+          tweenDuration={10000}
+        />
         <div className="flex flex-col gap-y-4 lg:gap-y-8 max-w-lg mx-auto text-center items-center justify-center h-full">
           <Image
             src="/finish.svg"
@@ -167,7 +225,9 @@ export const Quiz = ({
         <Footer
           lessonId={lessonId}
           status="completed"
-          onCheck={() => router.push("/learn")}
+          onCheck={async () => {
+            await router.push("/learn");
+          }}
         />
       </>
     );
@@ -180,6 +240,7 @@ export const Quiz = ({
 
   return (
     <>
+      {finishAudio}
       {inCorrectAudio}
       {correctAudio}
       <Header

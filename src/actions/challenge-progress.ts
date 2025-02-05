@@ -75,7 +75,7 @@ export const upsertChallengeProgress = async (challengeId: number) => {
     revalidatePath("/leaderboard");
     revalidatePath(`/lesson/${lessonId}`);
 
-    return;
+    return { isPractice: true }; 
   }
 
   //初めてチャレンジを完了した場合、新規データを作成
@@ -99,4 +99,6 @@ export const upsertChallengeProgress = async (challengeId: number) => {
     revalidatePath("/quests");
     revalidatePath("/leaderboard");
     revalidatePath(`/lesson/${lessonId}`);
+
+    return { isPractice: false };
 };
