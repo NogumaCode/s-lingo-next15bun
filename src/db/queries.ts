@@ -7,6 +7,7 @@ import {
   units,
   userProgress,
   lessons,
+  userSubscription,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -260,3 +261,40 @@ export const getLessonPercentage = cache(async () => {
   // 計算した進捗率を返す
   return percentage;
 });
+
+
+const DAY_IN_MS = 86_400_000; // 1日をミリ秒単位で表す (24時間 × 60分 × 60秒 × 1000ミリ秒)
+
+/**
+ * ユーザーのサブスクリプション情報を取得する
+ *
+ * @returns ユーザーのサブスクリプション情報（なければ `null`）
+ */
+export const getUserSubscription = cache(async () => {
+  // 現在ログインしているユーザーの情報を取得
+  const { userId } = await auth();
+
+  // ユーザーがログインしていなければ、サブスクリプション情報はないので `null` を返す
+  if (!userId) return null;
+
+  // データベースから、このユーザーのサブスクリプション情報を探す
+  const data = await db.query.userSubscription.findFirst({
+    where: eq(userSubscription.userId, userId), // `userId` が一致するデータを取得
+  });
+
+  // サブスクリプション情報が見つからなければ `null` を返す
+  if (!data) return null;
+
+  // サブスクリプションがアクティブかどうかを判定
+  const isActive =
+    data.stripePriceId && // `stripePriceId` がある（無料プランではなく、有料プラン）
+    data.stripeCurrentPeriodEnd && // サブスクリプションの終了日が設定されている
+    data.stripeCurrentPeriodEnd.getTime() + DAY_IN_MS > Date.now(); // 現在の日時よりも1日後の期限が残っている
+
+  // サブスクリプション情報と `isActive` フラグを返す
+  return {
+    ...data,
+    isActive: !!isActive, // `true` または `false` に変換
+  };
+});
+
