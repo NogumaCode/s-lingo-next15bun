@@ -162,6 +162,7 @@ export const Quiz = ({
         setIsProcessing(false);
       }
     } else {
+      // もしユーザーの選択肢が間違いだった場合
       try {
         const response = await reduceHearts(challenge.id);
 
