@@ -1,13 +1,15 @@
 "use server";
 
+import { POINTS_TO_REFILL } from "@/constants";
 import { db } from "@/db/drizzle";
-import { getCourseById, getUserProgress } from "@/db/queries";
+import { getCourseById, getUserProgress, getUserSubscription } from "@/db/queries";
 import { challengeProgress, challenges, userProgress } from "@/db/schema";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-const POINTS_TO_REFILL =10;
+
+
 export const upsertUserProgress = async (courseId: number) => {
   try {
     const { userId } = await auth();
@@ -23,9 +25,10 @@ export const upsertUserProgress = async (courseId: number) => {
       throw new Error("コースが見つかりません");
     }
 
-    // if(!course.units.length || !course.units[0].lessons.length){
-    //   throw new Error("コースにユニットがありません");
-    // }
+    if(!course.units.length || !course.units[0].lessons.length){
+      throw new Error("コースにユニットがありません");
+    }
+
     const existingUserProgress = await getUserProgress();
 
     if (existingUserProgress) {
@@ -66,6 +69,9 @@ export const reduceHearts = async (challengeId: number) => {
   //現在のユーザーの進捗情報を取得
   const currentUserProgress = await getUserProgress();
 
+  //ユーザーが有料会員か確認
+  const userSubscription = await getUserSubscription();
+
   //Get userSubscription
 
   //指定されたチャレンジ（課題）をデータベースから検索
@@ -99,7 +105,10 @@ export const reduceHearts = async (challengeId: number) => {
     throw new Error("User progress not found");
   }
 
-  //Handle subscription
+  //サブスク会員だったら、サブスクエラーを返す
+  if(userSubscription?.isActive){
+    return{error:"subscription"}
+  }
 
   // ハートが 0 の場合、処理を中断
   if (currentUserProgress.hearts === 0) {
@@ -149,5 +158,5 @@ export const refillHearts = async ()=>{
   revalidatePath("/learn");
   revalidatePath("/quests");
   revalidatePath("/leaderboard");
-  
+
 }

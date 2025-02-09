@@ -218,14 +218,15 @@ const main = async () => {
     console.log("Seeding database");
 
     const deleteTables = [
-      schema.courses,
-      schema.userProgress,
-      schema.units,
-      schema.lessons,
-      schema.challenges,
-      schema.challengeOptions,
-      schema.challengeProgress,
+      schema.challengeOptions,  // 子テーブル1
+      schema.challengeProgress, // 子テーブル2
+      schema.challenges,        // 親テーブル1
+      schema.lessons,           // 親テーブル2
+      schema.units,             // 親テーブル3
+      schema.userProgress,      // 親テーブル4
+      schema.courses,           // 最上位のテーブル
     ];
+
 
     for (const table of deleteTables) {
       await db.delete(table);
