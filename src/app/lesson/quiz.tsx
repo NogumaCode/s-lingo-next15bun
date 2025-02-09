@@ -8,7 +8,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { reduceHearts } from "@/actions/user-progress";
-import { challengeOptions, challenges } from "@/db/schema";
+import { challengeOptions, challenges, userSubscription } from "@/db/schema";
 import { useHeartsModal } from "../store/use-hearts-modal";
 import { usePracticeModal } from "../store/use-practice-modal";
 import { upsertChallengeProgress } from "@/actions/challenge-progress";
@@ -27,7 +27,9 @@ type Props = {
     completed: boolean;
     challengeOptions: (typeof challengeOptions.$inferSelect)[];
   })[];
-  userSubscription: any; //TODO Relace with subscription DB type
+  userSubscription: typeof userSubscription.$inferSelect &{
+    isActive:boolean;
+  } | null;
 };
 export const Quiz = ({
   initialPercentage,
@@ -72,9 +74,8 @@ export const Quiz = ({
   });
 
   const [selectedOption, setSelectedOption] = useState<number>();
-  const [status, setStatus] = useState<
-    "correct" | "wrong" | "none" | "completed"
-  >("none");
+  const [status, setStatus] = useState<"correct" | "wrong" | "none" | "completed">("none");
+
 
   const challenge = challenges[activeIndex];
   const options = challenge?.challengeOptions ?? [];
@@ -82,10 +83,12 @@ export const Quiz = ({
   const onNext = () => {
     setActiveIndex((prevIndex) => {
       const nextIndex = prevIndex + 1;
+      console.log(`⏭ 次の問題: ${nextIndex} / ${challenges.length}`);
 
       if (nextIndex >= challenges.length) {
-        setStatus("completed"); // 🔹 ここで直接 "completed" に変更
-        return prevIndex; // インデックスを変えない（最後の問題のまま）
+        console.log("✅ ゴールに到達！ challenges.length:", challenges.length);
+        setStatus("completed");
+        return prevIndex;
       }
 
       return nextIndex;
@@ -93,11 +96,15 @@ export const Quiz = ({
   };
 
   useEffect(() => {
+    console.log(`📌 status の更新: ${status}`);
+
     if (status === "completed" && !playedAudio) {
+      console.log("🎉 ゴール画面へ遷移します");
       finishControls.play();
       setPlayedAudio(true);
     }
   }, [status, finishControls, playedAudio]);
+
 
   const onSelect = (id: number) => {
     if (status !== "none") return;
@@ -119,6 +126,7 @@ export const Quiz = ({
     }
     // もし前回の問題が正解だった場合
     if (status === "correct") {
+      console.log("✅ 正解なので次の問題へ進む");
       onNext();
       setStatus("none");
       setSelectedOption(undefined);
@@ -131,6 +139,7 @@ export const Quiz = ({
 
     // 正解選択肢が見つからなかった場合、何もしない
     if (!correctOption) {
+      console.log("⚠️ 正解オプションが見つかりません");
       setIsProcessing(false);
       return;
     }
