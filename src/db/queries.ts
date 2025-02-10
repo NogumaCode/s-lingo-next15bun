@@ -9,7 +9,7 @@ import {
   lessons,
   userSubscription,
 } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export const getUserProgress = cache(async () => {
   try {

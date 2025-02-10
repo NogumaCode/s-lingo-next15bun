@@ -219,6 +219,7 @@ const main = async () => {
 
     const deleteTables = [
       schema.challengeOptions,  // 子テーブル1
+      schema.userSubscription,  // 子テーブル1
       schema.challengeProgress, // 子テーブル2
       schema.challenges,        // 親テーブル1
       schema.lessons,           // 親テーブル2
