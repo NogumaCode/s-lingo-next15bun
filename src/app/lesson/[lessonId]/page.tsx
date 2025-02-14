@@ -6,19 +6,23 @@ import { Quiz } from "../quiz";
 
 type Props ={
   params:{
-    lessonId:number;
+    lessonId:string;
   }
 }
 const LessonIdPage = async ({params,}:Props) => {
-  const lessonData = getLesson(params.lessonId);
-  const userProgressData = getUserProgress();
-  const userSubscriptionData = getUserSubscription();
+   // paramsを非同期で取得
+   const awaitedParams = await params;
 
-  const [lesson, userProgress,userSubscription] = await Promise.all([
-    lessonData,
-    userProgressData,
-    userSubscriptionData,
-  ]);
+   // lessonIdを数値に変換
+   const lessonId = Number(awaitedParams.lessonId);
+
+   // 非同期でデータ取得
+   const [lesson, userProgress, userSubscription] = await Promise.all([
+     getLesson(lessonId),
+     getUserProgress(),
+     getUserSubscription(),
+   ]);
+
 
   if (!lesson || !userProgress) {
     redirect("/learn");
